@@ -1,0 +1,13 @@
+﻿title: Test
+---
+Lord:
+    ->okay
+        <<stop>>
+    ->test
+        <<jump test2>>
+===
+
+title: test2
+---
+test
+===
