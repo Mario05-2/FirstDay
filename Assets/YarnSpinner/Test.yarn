@@ -1,13 +1,22 @@
-﻿title: Test
+﻿title: Telephone
 ---
-Lord:
-    ->okay
+Telephone Pole: Hello, this is a test.
+    ->Me:Hello
+        <<jump TelephoneInteraction2>>
+    ->Me:test
         <<stop>>
-    ->test
-        <<jump test2>>
 ===
 
-title: test2
+title: TelephoneInteraction2
 ---
-test
+<<once>>
+Telephone Pole: This will be used in the real game.
+<<endonce>>
+TelePhone Pole: What test is better?
+    ->Me:Test1
+        <<stop>>
+    ->Me:Test2
+        <<stop>>
+    ->Me:Test3
+        <<stop>>
 ===

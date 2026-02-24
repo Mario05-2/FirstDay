@@ -58,6 +58,13 @@ public class FirstPersonController : MonoBehaviour
     private Vector3 recoil = Vector3.zero;
     private bool isLook = true, isMove = true;
 
+
+    public NPCInteraction interaction;
+
+    
+
+
+
     public float CurrentCameraHeight => isCrouching || isSliding ? crouchCameraHeight : originalCameraParentHeight;
 
     private void Awake(){
@@ -116,8 +123,10 @@ public class FirstPersonController : MonoBehaviour
 
             transform.rotation = Quaternion.Euler(0f, rotX, 0f);
         }
-
-        HandleHeadBob();
+        if (interaction.inDialogue == false)
+        {
+            HandleHeadBob();
+        }
 
         //bool wantsToCrouch = canCrouch && Input.GetKey(KeyCode.LeftControl) && !isSliding;
         bool wantsToCrouch = canCrouch && inputManager.LeftTriggerPressed.Held() && !isSliding;
@@ -169,7 +178,10 @@ public class FirstPersonController : MonoBehaviour
         float targetFov = isSprinting ? sprintFov : (isSliding ? sprintFov + slideFovBoost : normalFov);
         cam.fieldOfView = Mathf.Lerp(cam.fieldOfView, targetFov, Time.deltaTime * fovChangeSpeed);
 
+        if (interaction.inDialogue == false)
+        {
         HandleMovement();
+        }
     }
 
     private void HandleHeadBob(){
