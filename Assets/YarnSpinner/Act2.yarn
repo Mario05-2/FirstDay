@@ -40,7 +40,7 @@ The keypad is glowing faintly, indicating that it is locked. You need to find th
 
 title: Collect_Note
 ---
-<<playSFX "note">>
+//<<playSFX "note">>
 I found a note. It has a number on it.
 The paper is old, but the number is clear.
 <<set $notesCollected += 1>>
