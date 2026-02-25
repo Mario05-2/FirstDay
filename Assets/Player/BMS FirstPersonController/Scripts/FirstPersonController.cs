@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Linq;
 using UnityEngine;
 
 public class FirstPersonController : MonoBehaviour
@@ -59,7 +60,7 @@ public class FirstPersonController : MonoBehaviour
     private bool isLook = true, isMove = true;
 
 
-    public NPCInteraction interaction;
+    public NPCInteraction[] interactions;
 
     
 
@@ -123,7 +124,7 @@ public class FirstPersonController : MonoBehaviour
 
             transform.rotation = Quaternion.Euler(0f, rotX, 0f);
         }
-        if (interaction.inDialogue == false)
+        if (!interactions.Any(i => i != null && i.inDialogue))
         {
             HandleHeadBob();
         }
@@ -178,9 +179,9 @@ public class FirstPersonController : MonoBehaviour
         float targetFov = isSprinting ? sprintFov : (isSliding ? sprintFov + slideFovBoost : normalFov);
         cam.fieldOfView = Mathf.Lerp(cam.fieldOfView, targetFov, Time.deltaTime * fovChangeSpeed);
 
-        if (interaction.inDialogue == false)
+        if (!interactions.Any(i => i != null && i.inDialogue))
         {
-        HandleMovement();
+            HandleMovement();
         }
     }
 

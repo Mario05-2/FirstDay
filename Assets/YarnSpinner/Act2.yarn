@@ -1,0 +1,83 @@
+﻿title: Act2
+---
+<<once>>
+BigBoss: I see you made it inside safely. 
+BigBoss: I hope you are ready for what is to come next.
+    ->Me: I'm ready.
+        <<jump Act2Stage1>>
+    ->Me: What is the Objective again?
+        BigBoss: We just discussed this.
+        <<jump Briefing>>
+<<endonce>>
+===
+
+title: Briefing
+---
+BigBoss: The objective is to get into the basement and find the important files that we seek.
+<<jump Act2Stage1>>
+===
+title: Act2Stage1
+---
+BigBoss: The first stage is getting getting the passcode for the basement.
+BigBoss: I have heard that the passcode is scattered on notes around the building.
+BigBoss: You will have to find all the notes and piece together the passcode.
+    ->Me: I can do that.
+        <<stop>>
+    ->Me: Can you give me any tips?
+        BigBoss: I have heard that the notes are hidden in places that are commonly overlooked.
+        <<stop>>       
+===
+
+title: Act2_Start
+---
+The building is dimly lit, with shadows lurking in every corner. You can hear the office workers type.
+The keypad is glowing faintly, indicating that it is locked. You need to find the notes to figure out the passcode.
+    ->Check the keyboard
+    <<jump Keyboard_Check>>
+    ->Leave
+    <<stop>>
+===
+
+title: Collect_Note
+---
+<<playSFX "note">>
+I found a note. It has a number on it.
+The paper is old, but the number is clear.
+<<set $notesCollected += 1>>
+<<if $notesCollected < 4>>
+    I need to find more notes to piece together the passcode.
+<<else>>
+    <<set $keypadUnlocked = true>>
+    I have collected all the notes. I should be able to piece together the passcode now.
+<<endif>>
+<<stop>>
+===
+
+title: Keyboard_Check
+---
+The keypad is locked. It seems to require a passcode to unlock it.
+<<if $keypadUnlocked == true>>
+    I have all the notes. I should be able to piece together the passcode now.
+    <<jump Basement_Unlock>>
+<<else>>
+    I need to find the notes to figure out the passcode.
+    <<if $notesCollected == 0>>
+        I haven't found any notes yet.
+    <<else>>
+        I've found {$notesCollected} note(s) so far.
+        I still need more.
+    <<endif>>
+    -> Step away
+        <<stop>>
+<<endif>>
+===
+
+title: Basement_Unlock
+---
+I enter the passcode into the keypad.
+The keypad beeps.
+The door unlocks.
+I can now access the basement and find the important files.
+-> Enter the basement
+    <<stop>>
+===
