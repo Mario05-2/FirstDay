@@ -7,6 +7,7 @@ public class PlacementManager : MonoBehaviour
 
     public GameObject placementOverlayCube;
     public GameObject scannerPrefab;
+    public GameObject relayPrefab;
 
     private PlacementZone currentZone;
 
@@ -55,13 +56,28 @@ public class PlacementManager : MonoBehaviour
             placementOverlayCube.SetActive(true);
     }
 
-    // COMMAND 2
+    //[YarnCommand("PlaceObject")]
     public void PlaceObject(string objectType)
     {
         Debug.Log("PlaceObject called with objectType: " + objectType);
         if (currentZone == null) return;
 
-        Instantiate(scannerPrefab, currentZone.transform.position, Quaternion.identity);
+        GameObject prefabToPlace = null;
+
+        switch (objectType)
+        {
+            case "Scanner":
+                prefabToPlace = scannerPrefab;
+                break;
+            case "Relay":
+                prefabToPlace = relayPrefab;
+                break;
+        }
+
+        if (prefabToPlace != null)
+        {
+            Instantiate(prefabToPlace, currentZone.transform.position, Quaternion.identity);
+        }
 
         if (placementOverlayCube != null)
             placementOverlayCube.SetActive(false);
