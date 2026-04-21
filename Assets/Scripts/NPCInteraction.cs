@@ -80,8 +80,10 @@ public class NPCInteraction : MonoBehaviour
         // Only allow starting dialogue if not already talking and no other dialogue is running
         if (playerInRange && !isCurrentlyTalking && !dialogueRunner.IsDialogueRunning)
         {
+            Debug.Log("Entered");
             if (Keyboard.current[interactionKey].wasPressedThisFrame)
             {
+                Debug.Log("not working");
                 StartDialogue();
             }
         }
