@@ -25,9 +25,9 @@ BisBoss: When you are in position, deploy the scanner.
 title: Place_Scanner
 ---
 This looks like the right spot.
-//<<command ShowPlacementOverlay "Scanner">>
+<<ShowPlacementOverlay "Scanner">>
     ->Place Scanner
-    <<command PlaceOject "Scanner">>
+    <<PlaceObject "Scanner">>
     <<set $scannerPlace = true>>
 BigBoss: Good.
 BigBoss: That will give us visibility. 
@@ -45,13 +45,13 @@ BigBoss: I'm expecting resistance.
 BigBoss: Stay frosty.
 ===
 
-title:Place_Relay
+title: Place_Relay
 ---
 This must be the relay point.
-//<<command ShowPlacementOverlay "Relay">>
+<<ShowPlacementOverlay "Relay">>
     ->Place the relay
-    <<command PlaceObject "Relay">>
-    <<set $relayPlaced = True>>
+    <<PlaceObject "Relay">>
+    <<set $relayPlaced = true>>
 A faint hum confirms the relay is active. 
 BigBoss: Signal is stabilised.
 BigBoss: That should keep us connected unless something disables it.

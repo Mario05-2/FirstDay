@@ -17,7 +17,10 @@ public class PlacementManager : MonoBehaviour
     private void Awake()
     {
         Instance = this;
-        placementOverlay.SetActive(false);
+        if (placementOverlay != null)
+        {
+            placementOverlay.SetActive(false);
+        }
     }
 
     public void SetCurrentZone(PlacementZone zone)
@@ -28,13 +31,27 @@ public class PlacementManager : MonoBehaviour
     [YarnCommand("ShowPlacementOverlay")]
     public void ShowOverlay(string objectType)
     {
+        if (placementOverlay == null)
+        {
+            Debug.LogWarning("PlacementManager: placementOverlay is not assigned.");
+            return;
+        }
+
         placementOverlay.SetActive(true);
     }
 
     [YarnCommand("PlaceObject")]
     public void PlaceObject(string objectType)
     {
-        if (currentZone == null) return;
+        if (currentZone == null)
+        {
+            Debug.LogWarning("PlacementManager: no active placement zone was found.");
+            if (placementOverlay != null)
+            {
+                placementOverlay.SetActive(false);
+            }
+            return;
+        }
 
         GameObject prefab = null;
 
@@ -46,16 +63,21 @@ public class PlacementManager : MonoBehaviour
             case "Relay":
                 prefab = relayPrefab;
                 break;
+            default:
+                Debug.LogWarning($"PlacementManager: unknown object type '{objectType}'.");
+                break;
         }
 
         if (prefab != null)
         {
             Instantiate(prefab, currentZone.transform.position, Quaternion.identity);
+            currentZone.CompletePlacement();
+            currentZone = null;
         }
 
-        placementOverlay.SetActive(false);
-
-        currentZone.CompletePlacement();
-        currentZone = null;
+        if (placementOverlay != null)
+        {
+            placementOverlay.SetActive(false);
+        }
     }
 }
