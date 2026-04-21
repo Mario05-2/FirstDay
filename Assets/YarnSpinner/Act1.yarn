@@ -1,0 +1,15 @@
+﻿title: Act1
+---
+<<once>>
+BigBoss: Glad to see you pick up.
+BigBoss: Your mission is to break into the buliding.
+    ->Me: Any useful information I could use?
+        <<jump Plan>>
+    ->Me: I will get on it.
+<<endonce>>
+===
+
+title: Plan
+---
+BigBoss:  
+===
