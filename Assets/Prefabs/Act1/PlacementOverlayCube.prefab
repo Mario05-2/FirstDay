@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 6007032297932931867}
   - component: {fileID: 2158079529300026943}
   m_Layer: 0
-  m_Name: PlacementZoneVisual
+  m_Name: PlacementOverlayCube
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

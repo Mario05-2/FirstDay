@@ -5,22 +5,41 @@ public class PlacementManager : MonoBehaviour
 {
     public static PlacementManager Instance;
 
-    [Header("Overlay")]
-    public GameObject placementOverlay;
-
-    [Header("Prefabs")]
+    public GameObject placementOverlayCube;
     public GameObject scannerPrefab;
-    public GameObject relayPrefab;
 
     private PlacementZone currentZone;
+
+    private DialogueRunner dialogueRunner;
 
     private void Awake()
     {
         Instance = this;
-        if (placementOverlay != null)
+
+        if (placementOverlayCube != null)
+            placementOverlayCube.SetActive(false);
+    }
+
+    private void Start()
+    {
+        dialogueRunner = FindFirstObjectByType<DialogueRunner>();
+
+        if (dialogueRunner == null)
         {
-            placementOverlay.SetActive(false);
+            Debug.LogError("No DialogueRunner found in scene!");
+            return;
         }
+
+        //manual command registration
+        dialogueRunner.AddCommandHandler<string>(
+            "ShowPlacementOverlay",
+            ShowOverlay
+        );
+
+        dialogueRunner.AddCommandHandler<string>(
+            "PlaceObject",
+            PlaceObject
+        );
     }
 
     public void SetCurrentZone(PlacementZone zone)
@@ -28,56 +47,26 @@ public class PlacementManager : MonoBehaviour
         currentZone = zone;
     }
 
-    [YarnCommand("ShowPlacementOverlay")]
+    //[YarnCommand("ShowPlacementOverlay")]
     public void ShowOverlay(string objectType)
     {
-        if (placementOverlay == null)
-        {
-            Debug.LogWarning("PlacementManager: placementOverlay is not assigned.");
-            return;
-        }
-
-        placementOverlay.SetActive(true);
+        Debug.Log("ShowOverlay called with objectType: " + objectType);
+        if (placementOverlayCube != null)
+            placementOverlayCube.SetActive(true);
     }
 
-    [YarnCommand("PlaceObject")]
+    // COMMAND 2
     public void PlaceObject(string objectType)
     {
-        if (currentZone == null)
-        {
-            Debug.LogWarning("PlacementManager: no active placement zone was found.");
-            if (placementOverlay != null)
-            {
-                placementOverlay.SetActive(false);
-            }
-            return;
-        }
+        Debug.Log("PlaceObject called with objectType: " + objectType);
+        if (currentZone == null) return;
 
-        GameObject prefab = null;
+        Instantiate(scannerPrefab, currentZone.transform.position, Quaternion.identity);
 
-        switch (objectType)
-        {
-            case "Scanner":
-                prefab = scannerPrefab;
-                break;
-            case "Relay":
-                prefab = relayPrefab;
-                break;
-            default:
-                Debug.LogWarning($"PlacementManager: unknown object type '{objectType}'.");
-                break;
-        }
+        if (placementOverlayCube != null)
+            placementOverlayCube.SetActive(false);
 
-        if (prefab != null)
-        {
-            Instantiate(prefab, currentZone.transform.position, Quaternion.identity);
-            currentZone.CompletePlacement();
-            currentZone = null;
-        }
-
-        if (placementOverlay != null)
-        {
-            placementOverlay.SetActive(false);
-        }
+        currentZone.CompletePlacement();
+        currentZone = null;
     }
 }
