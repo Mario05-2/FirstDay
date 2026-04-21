@@ -1,73 +1,15 @@
 ﻿title: Act1
 ---
-Wind rushes across the rooftop.
-The city is quiet yet alive from within.
 <<once>>
-BigBoss: Glad to see you picked up and are in position.
-BigBoss: Before we send you inside, we need to prepare the site.
-BigBoss: Place the equipment where I marked it.
-BigBoss: It will give us the edge in this operation once things get... complicated.
-    ->Me: What kind of complications?
-BigBoss: You won't be alone in there.
-BigBoss: Security patrols the building and the workers are there as well.
-BigBoss: If the spot you, the mission is over.
-
+BigBoss: Glad to see you pick up.
+BigBoss: Your mission is to break into the buliding.
+    ->Me: Any useful information I could use?
+        <<jump Plan>>
+    ->Me: I will get on it.
 <<endonce>>
 ===
 
-title: Act1_Task1
+title: Plan
 ---
-BigBoss: First marker is live
-BigBoss: Move to the highlighted zone.
-BisBoss: When you are in position, deploy the scanner.
-===
-
-title: Place_Scanner
----
-This looks like the right spot.
-<<command ShowPlacementOverlay "Scanner">>
-    ->Place Scanner
-    <<command PlaceOject "Scanner">>
-    <<set $scannerPlace = true>>
-BigBoss:Good.
-BigBoss:That will give us visibility. 
-BigBoss:I'm picking up movement already.
-<<jump Act1_Task2>>
-===
-
-title: Act1_Task2
----
-BigBoss:Next we need a relay.
-BisBoss:Communications in that building are unreliable.
-BigBoss:Place it before we lose signal.
-    ->Me:You're expecting interference?
-BigBoss:I'm expecting resistance.
-BigBoss:Stay frosty.
-===
-
-title:Place_Relay
----
-This must be the relay point.
-<<command ShowPlacementOverlay "Relay">>
-    ->Place the relay
-    <<command PlaceObject "Relay">>
-    <<set $relayPlaced = True>>
-A faint hum confirms the relay is active. 
-BigBoss:Signal is stabilised.
-BigBoss:That should keep us connected unless something disables it.
-<<jump Act1_Final>> 
-===
-
-title: Act1_Final
----
-BigBoss:That's everything
-BigBoss:From here on, you're on your own
-BigBoss:I can only give guidance
-BigBoss:The basement holds the files we need.
-BigBoss:The keypad inside is locked- you will need to find a way to open it.
-BigBoss:And remember- security and the office workers are active throughout the building.
-BigBoss:Avoid them at all costs.
-    ->Me:I'll handle it.
-BigBoss: Get moving
-<<stop>>
+BigBoss:  
 ===
