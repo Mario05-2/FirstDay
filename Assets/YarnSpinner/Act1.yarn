@@ -69,5 +69,5 @@ BigBoss: And remember- security and the office workers are active throughout the
 BigBoss: Avoid them at all costs.
     ->Me:I'll handle it.
 BigBoss: Get moving
-<<stop>>
+<<switchScene "Act2">>
 ===

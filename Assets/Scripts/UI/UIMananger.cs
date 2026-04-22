@@ -4,6 +4,8 @@ using UnityEngine.UI;
 
 public class UIMananger : MonoBehaviour
 {
+    public static UIMananger Instance { get; private set; }
+
     [SerializeField] GameObject pauseMenu;
     [SerializeField] GameObject winMenu;
     [SerializeField] GameObject caughtMenu;
@@ -16,11 +18,12 @@ public class UIMananger : MonoBehaviour
 
     public void Awake()
     {
+        Instance = this;
         Time.timeScale = 1f;
     }
     void Start()
     {
-        pauseMenu.SetActive(false);
+        if (pauseMenu != null) pauseMenu.SetActive(false);
         if (winMenu != null) winMenu.SetActive(false);
         if (caughtMenu != null) caughtMenu.SetActive(false);
         isGamePaused = false;
@@ -82,6 +85,8 @@ public class UIMananger : MonoBehaviour
     {
         if (caughtMenu != null)
             caughtMenu.SetActive(true);
+        else
+            Debug.LogWarning("UIMananger: caughtMenu is not assigned in the Inspector.");
 
         if (stealthMeterOverlay != null)
             stealthMeterOverlay.SetActive(false);
