@@ -41,6 +41,16 @@ public class AIEnemy : MonoBehaviour
     [Header("Alarm System (ACT 2)")]
     [SerializeField] private List<Transform> alarmPoints;
 
+    //act 2 alarm response
+    private Vector3 alarmPosition;
+    private bool hasAlarm;
+    private Vector3 lastProcessedAlarmPosition;
+
+    private bool investigating;
+    private bool reachedAlarm;
+    private float investigateTimer;
+    [SerializeField] private float investigateDuration = 4f;
+
     private NavMeshAgent agent;
     private Transform player;
 
@@ -49,10 +59,6 @@ public class AIEnemy : MonoBehaviour
     private float patrolTimer;
     private float chaseTimer;
     private Transform currentPatrolPoint;
-
-    //act 2 alarm response
-    private Vector3 alarmPosition;
-    private bool hasAlarm;
 
     void Start()
     {
@@ -101,11 +107,24 @@ public class AIEnemy : MonoBehaviour
                     alarmPosition = alarm.position;
                     hasAlarm = true;
 
+                    investigating = false;
+                    reachedAlarm = false;
+                    investigateTimer = 0f;
+
                     Debug.Log("moving to alarm " + alarm.name);
 
                     Transition(AIState.Engage);
                 }
             }
+        }
+
+        if (mode == AIMode.Act3_ChasePlayer && AlarmTrigger.alarmActive && lastProcessedAlarmPosition != AlarmTrigger.lastAlarmPosition)
+        {
+            StartAlarmResponse(AlarmTrigger.lastAlarmPosition);
+
+            Debug.Log("moving to act 3 alarm " + alarmPosition);
+
+            Transition(AIState.Engage);
         }
     }
 
@@ -119,6 +138,12 @@ public class AIEnemy : MonoBehaviour
         if (newState == AIState.Patrol)
         {
             patrolTimer = 0;
+
+            investigating = false;
+            reachedAlarm = false;
+            investigateTimer = 0;
+            hasAlarm = false;
+
             SetPatrol();
         }
 
@@ -138,7 +163,7 @@ public class AIEnemy : MonoBehaviour
     {
         agent.isStopped = false;
 
-        if (CanSeePlayer() && mode == AIMode.Act3_ChasePlayer)
+        if (mode == AIMode.Act3_ChasePlayer && CanSeePlayer())
         {
             Transition(AIState.Engage);
             return;
@@ -181,6 +206,41 @@ public class AIEnemy : MonoBehaviour
         //act 3 chase player
         if (mode == AIMode.Act3_ChasePlayer)
         {
+            if (hasAlarm)
+            {
+                MoveToAlarmPoint();
+
+                if (!reachedAlarm && Vector3.Distance(transform.position, alarmPosition) <= 1.5f)
+                {
+                    reachedAlarm = true;
+                    investigating = true;
+                    investigateTimer = 0f;
+
+                    Debug.Log("arrived at act 3 alarm - investigating");
+                }
+
+                if (investigating)
+                {
+                    investigateTimer += Time.deltaTime;
+
+                    if (CanSeePlayer())
+                    {
+                        Debug.Log("player found at act 3 alarm");
+                        Transition(AIState.Attack);
+                        return;
+                    }
+
+                    if (investigateTimer >= investigateDuration)
+                    {
+                        Debug.Log("act 3 alarm cleared, resuming chase");
+                        ClearAlarmResponse();
+                        return;
+                    }
+                }
+
+                return;
+            }
+
             agent.SetDestination(player.position);
 
             if (CanSeePlayer())
@@ -189,20 +249,77 @@ public class AIEnemy : MonoBehaviour
                 chaseTimer -= Time.deltaTime;
 
             if (!CanSeePlayer() && chaseTimer <= 0f)
+            {
                 Transition(AIState.Patrol);
+                return;
+            }
+
+            if (dist <= attackRange)
+            {
+                Transition(AIState.Attack);
+                return;
+            }
+
+            return;
         }
 
         //act2 go to alarm
         if (mode == AIMode.Act2_AlarmResponse)
         {
-            if (hasAlarm)
+            if (!hasAlarm) return;
+
+            MoveToAlarmPoint();
+
+            if (!reachedAlarm && Vector3.Distance(transform.position, alarmPosition) <= 1.5f)
             {
-                MoveToAlarmPoint();
+                reachedAlarm = true;
+                investigating = true;
+                investigateTimer = 0f;
+
+                Debug.Log("arrived at alarm - investigating");
+            }
+
+            if (investigating)
+            {
+                investigateTimer += Time.deltaTime;
+
+                if (CanSeePlayer())
+                {
+                    Debug.Log("player found at alarm");
+                    Transition(AIState.Attack);
+                    return;
+                }
+
+                if (investigateTimer >= investigateDuration)
+                {
+                    Debug.Log("nothing found, returning to patrol");
+                    Transition(AIState.Patrol);
+                    return;
+                }
             }
         }
 
         if (dist <= attackRange)
             Transition(AIState.Attack);
+    }
+
+    void StartAlarmResponse(Vector3 position)
+    {
+        alarmPosition = position;
+        lastProcessedAlarmPosition = position;
+        hasAlarm = true;
+
+        investigating = false;
+        reachedAlarm = false;
+        investigateTimer = 0f;
+    }
+
+    void ClearAlarmResponse()
+    {
+        hasAlarm = false;
+        investigating = false;
+        reachedAlarm = false;
+        investigateTimer = 0f;
     }
 
     //act 2 move to alarm
@@ -213,7 +330,6 @@ public class AIEnemy : MonoBehaviour
         if (NavMesh.SamplePosition(alarmPosition, out NavMeshHit hit, 3f, NavMesh.AllAreas))
         {
             agent.isStopped = false;
-            agent.ResetPath();
             agent.SetDestination(hit.position);
 
             Debug.Log("moving to alarm point " + hit.position);
