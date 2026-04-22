@@ -15,26 +15,45 @@ public class PlacementZone : MonoBehaviour
     {
         if (used) return;
 
-        if (other.CompareTag("Player"))
+        if (!other.CompareTag("Player")) return;
+
+        //relay lock check
+        if (yarnNode == "Place_Relay" && PlacementManager.Instance != null)
         {
-            Debug.Log("ZONE ENTERED: " + gameObject.name);
-
-            PlacementManager.Instance.SetCurrentZone(this);
-
-            if (dialogueRunner != null)
+            if (!PlacementManager.Instance.IsRelayUnlocked())
             {
-                Debug.Log("STARTING DIALOGUE: " + yarnNode);
-                dialogueRunner.StartDialogue(yarnNode);
+                Debug.Log("relay zone blocked: Scanner not placed yet");
+                return;
             }
+        }
+
+        Debug.Log("ZONE ENTERED: " + gameObject.name);
+
+        //register zone with manager
+        if (PlacementManager.Instance != null)
+        {
+            PlacementManager.Instance.SetCurrentZone(this);
+        }
+
+        //start Yarn dialogue
+        if (dialogueRunner != null)
+        {
+            Debug.Log("STARTING DIALOGUE: " + yarnNode);
+            dialogueRunner.StartDialogue(yarnNode);
+        }
+        else
+        {
+            Debug.LogWarning("No DialogueRunner assigned on " + gameObject.name);
         }
     }
 
     private void OnTriggerExit(Collider other)
     {
-        if (other.CompareTag("Player"))
+        if (!other.CompareTag("Player")) return;
+
+        if (PlacementManager.Instance != null)
         {
-            if (PlacementManager.Instance != null)
-                PlacementManager.Instance.ClearZone();
+            PlacementManager.Instance.ClearZone();
         }
     }
 

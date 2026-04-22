@@ -17,7 +17,17 @@ public class PlacementManager : MonoBehaviour
     public GameObject relayOverlayCube;
 
     private PlacementZone currentZone;
-    private bool scannerPlaced = false;
+
+    //mission state tracking
+    private enum MissionState
+    {
+        ScannerPending,
+        ScannerPlaced,
+        RelayUnlocked,
+        RelayPlaced
+    }
+
+    private MissionState state = MissionState.ScannerPending;
 
     private void Awake()
     {
@@ -59,7 +69,7 @@ public class PlacementManager : MonoBehaviour
         currentZone = null;
     }
 
-    //overlay
+    // overlay
     private void HideAllOverlays()
     {
         if (scannerOverlayCube) scannerOverlayCube.SetActive(false);
@@ -80,17 +90,23 @@ public class PlacementManager : MonoBehaviour
                 break;
 
             case "Relay":
+
+                //block before scanner is placed
+                if (state < MissionState.RelayUnlocked)
+                {
+                    Debug.LogWarning("Relay not unlocked yet!");
+                    return;
+                }
+
                 if (relayOverlayCube)
                     relayOverlayCube.SetActive(true);
                 break;
         }
     }
 
-    //placement object
+    //placement
     private void PlaceObject(string objectType)
     {
-        Debug.Log("PLACE OBJECT: " + objectType);
-
         if (currentZone == null)
         {
             Debug.LogError("NO CURRENT ZONE!");
@@ -103,13 +119,17 @@ public class PlacementManager : MonoBehaviour
         {
             case "Scanner":
                 prefab = scannerPrefab;
-                scannerPlaced = true;
-                Debug.Log("Scanner placed ✔");
+                state = MissionState.ScannerPlaced;
+                Debug.Log("Scanner placed");
+
+                // unlock relay after scanner
+                state = MissionState.RelayUnlocked;
+                Debug.Log("Relay unlocked");
                 break;
 
             case "Relay":
 
-                if (!scannerPlaced)
+                if (state < MissionState.RelayUnlocked)
                 {
                     Debug.LogWarning("You must place Scanner first!");
                     HideAllOverlays();
@@ -117,7 +137,8 @@ public class PlacementManager : MonoBehaviour
                 }
 
                 prefab = relayPrefab;
-                Debug.Log("Relay placed ✔");
+                state = MissionState.RelayPlaced;
+                Debug.Log("Relay placed");
                 break;
         }
 
@@ -130,5 +151,10 @@ public class PlacementManager : MonoBehaviour
 
         currentZone.ClearZone();
         currentZone = null;
+    }
+
+    public bool IsRelayUnlocked()
+    {
+        return state >= MissionState.RelayUnlocked;
     }
 }
