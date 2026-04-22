@@ -4,16 +4,32 @@ using UnityEngine.AI;
 
 public class AIEnemy : MonoBehaviour
 {
-    [Header("Detection")]
+    public enum AIMode
+    {
+        Act3_ChasePlayer,
+        Act2_AlarmResponse
+    }
+
+    public enum AIState
+    {
+        Patrol,
+        Engage,
+        Attack
+    }
+
+    [Header("Mode")]
+    [SerializeField] private AIMode mode;
+
+    [Header("Vision")]
     [SerializeField] private float sightDistance = 15f;
     [SerializeField] private float viewAngle = 90f;
     [SerializeField] private float eyeHeight = 1.5f;
     [SerializeField] private float visionRadius = 0.3f;
 
-    [Header("Ranges")]
+    [Header("Combat")]
     [SerializeField] private float attackRange = 2f;
 
-    [Header("Chase Memory")]
+    [Header("Act 3 (Chase)")]
     [SerializeField] private float minChaseTime = 2f;
     [SerializeField] private float maxChaseTime = 5f;
 
@@ -22,86 +38,107 @@ public class AIEnemy : MonoBehaviour
     [SerializeField] private float patrolWaitTime = 2f;
     [SerializeField] private List<Transform> patrolPoints;
 
+    [Header("Alarm System (ACT 2)")]
+    [SerializeField] private List<Transform> alarmPoints;
+
     private NavMeshAgent agent;
     private Transform player;
 
-    private AIState currentState;
+    private AIState state;
 
     private float patrolTimer;
     private float chaseTimer;
     private Transform currentPatrolPoint;
 
-    enum AIState
-    {
-        Patrol,
-        Chase,
-        Attack
-    }
+    // ACT 2
+    private Vector3 alarmPosition;
+    private bool hasAlarm;
 
     void Start()
     {
         agent = GetComponent<NavMeshAgent>();
 
-        GameObject playerObj = GameObject.FindWithTag("Player");
-        if (playerObj != null)
-            player = playerObj.transform;
+        GameObject p = GameObject.FindWithTag("Player");
+        if (p != null)
+            player = p.transform;
 
-        TransitionToState(AIState.Patrol);
+        Transition(AIState.Patrol);
+
+        Debug.Log("ai mode " + mode);
     }
 
     void Update()
     {
         if (player == null) return;
 
-        float distance = Vector3.Distance(transform.position, player.position);
+        float dist = Vector3.Distance(transform.position, player.position);
 
-        switch (currentState)
+        switch (state)
         {
             case AIState.Patrol:
-                UpdatePatrol();
+                Patrol();
                 break;
 
-            case AIState.Chase:
-                UpdateChase(distance);
+            case AIState.Engage:
+                Engage(dist);
                 break;
 
             case AIState.Attack:
-                UpdateAttack(distance);
+                Attack(dist);
                 break;
+        }
+
+        //act 2 detection alert
+        if (mode == AIMode.Act2_AlarmResponse)
+        {
+            if (!hasAlarm && CanSeePlayer())
+            {
+                Transform alarm = GetClosestAlarmPoint();
+
+                if (alarm != null)
+                {
+                    alarmPosition = alarm.position;
+                    hasAlarm = true;
+
+                    Debug.Log("moving to alarm " + alarm.name);
+
+                    Transition(AIState.Engage);
+                }
+            }
         }
     }
 
-    void TransitionToState(AIState newState)
+    void Transition(AIState newState)
     {
-        Debug.Log("STATE: " + newState);
+        state = newState;
 
-        currentState = newState;
+        Debug.Log("STATE → " + newState);
 
-        switch (newState)
+        if (newState == AIState.Patrol)
         {
-            case AIState.Patrol:
-                patrolTimer = 0f;
-                SetNewPatrolTarget();
-                break;
+            patrolTimer = 0;
+            SetPatrol();
+        }
 
-            case AIState.Chase:
-                chaseTimer = Random.Range(minChaseTime, maxChaseTime);
-                break;
+        if (newState == AIState.Engage)
+        {
+            chaseTimer = Random.Range(minChaseTime, maxChaseTime);
+        }
 
-            case AIState.Attack:
-                agent.isStopped = true;
-                break;
+        if (newState == AIState.Attack)
+        {
+            agent.isStopped = true;
         }
     }
 
-    void UpdatePatrol()
+    //patrol state
+    void Patrol()
     {
         agent.isStopped = false;
 
-        //vision check
-        if (CanSeePlayer())
+        if (CanSeePlayer() && mode == AIMode.Act3_ChasePlayer)
         {
-            TransitionToState(AIState.Chase);
+            Transition(AIState.Engage);
             return;
         }
 
@@ -110,102 +147,124 @@ public class AIEnemy : MonoBehaviour
             patrolTimer += Time.deltaTime;
 
             if (patrolTimer >= patrolWaitTime)
-            {
-                SetNewPatrolTarget();
-            }
+                SetPatrol();
         }
     }
 
-    void SetNewPatrolTarget()
+    void SetPatrol()
     {
-        patrolTimer = 0f;
+        patrolTimer = 0;
 
         if (patrolPoints != null && patrolPoints.Count > 0)
         {
-            int index = Random.Range(0, patrolPoints.Count);
-            currentPatrolPoint = patrolPoints[index];
+            currentPatrolPoint = patrolPoints[Random.Range(0, patrolPoints.Count)];
             agent.SetDestination(currentPatrolPoint.position);
             return;
         }
 
-        Vector3 randomDirection = Random.insideUnitSphere * patrolRadius;
-        randomDirection += transform.position;
+        Vector3 rand = Random.insideUnitSphere * patrolRadius + transform.position;
 
-        if (NavMesh.SamplePosition(randomDirection, out NavMeshHit hit, patrolRadius, NavMesh.AllAreas))
+        if (NavMesh.SamplePosition(rand, out NavMeshHit hit, patrolRadius, NavMesh.AllAreas))
         {
             agent.SetDestination(hit.position);
         }
     }
 
-    void UpdateChase(float distance)
+    //engage state
+    void Engage(float dist)
     {
         agent.isStopped = false;
 
-        if (player != null)
+        //act 3 chase player
+        if (mode == AIMode.Act3_ChasePlayer)
+        {
             agent.SetDestination(player.position);
 
-        // refresh memory if seen
-        if (CanSeePlayer())
-            chaseTimer = Random.Range(minChaseTime, maxChaseTime);
-        else
-            chaseTimer -= Time.deltaTime;
+            if (CanSeePlayer())
+                chaseTimer = Random.Range(minChaseTime, maxChaseTime);
+            else
+                chaseTimer -= Time.deltaTime;
 
-        if (!CanSeePlayer() && chaseTimer <= 0f)
-        {
-            TransitionToState(AIState.Patrol);
-            return;
+            if (!CanSeePlayer() && chaseTimer <= 0f)
+                Transition(AIState.Patrol);
         }
 
-        if (distance <= attackRange)
+        //act2 go to alarm
+        if (mode == AIMode.Act2_AlarmResponse)
         {
-            TransitionToState(AIState.Attack);
-        }
-    }
-
-    void UpdateAttack(float distance)
-    {
-        if (player == null) return;
-
-        Vector3 lookPos = new Vector3(player.position.x, transform.position.y, player.position.z);
-        transform.LookAt(lookPos);
-
-        if (distance > attackRange)
-        {
-            agent.isStopped = false;
-            TransitionToState(AIState.Chase);
-        }
-    }
-
-    bool CanSeePlayer()
-    {
-        if (player == null) return false;
-
-        Vector3 origin = transform.position + Vector3.up * eyeHeight;
-        Vector3 target = player.position + Vector3.up * 1f;
-
-        Vector3 direction = (target - origin);
-        float distance = direction.magnitude;
-        direction.Normalize();
-
-        // too far
-        if (distance > sightDistance)
-            return false;
-
-        //fov check
-        float angle = Vector3.Angle(transform.forward, direction);
-        if (angle > viewAngle * 0.5f)
-            return false;
-
-        // sphere cast to check for obstacles
-        if (Physics.SphereCast(origin, visionRadius, direction, out RaycastHit hit, sightDistance))
-        {
-            if (hit.transform == player || hit.transform.root == player)
+            if (hasAlarm)
             {
-                return true;
+                MoveToAlarmPoint();
             }
         }
 
+        if (dist <= attackRange)
+            Transition(AIState.Attack);
+    }
+
+    void MoveToAlarmPoint()
+    {
+        if (!hasAlarm) return;
+
+        if (NavMesh.SamplePosition(alarmPosition, out NavMeshHit hit, 3f, NavMesh.AllAreas))
+        {
+            agent.isStopped = false;
+            agent.ResetPath();
+            agent.SetDestination(hit.position);
+
+            Debug.Log("moving to alarm point " + hit.position);
+        }
+    }
+
+    //attack state
+    void Attack(float dist)
+    {
+        Vector3 look = new Vector3(player.position.x, transform.position.y, player.position.z);
+        transform.LookAt(look);
+
+        if (dist > attackRange)
+        {
+            agent.isStopped = false;
+            Transition(AIState.Engage);
+        }
+    }
+
+    //vision check
+    bool CanSeePlayer()
+    {
+        Vector3 origin = transform.position + Vector3.up * eyeHeight;
+        Vector3 target = player.position + Vector3.up * 1f;
+
+        Vector3 dir = (target - origin);
+        float dist = dir.magnitude;
+        dir.Normalize();
+
+        if (dist > sightDistance) return false;
+        if (Vector3.Angle(transform.forward, dir) > viewAngle * 0.5f) return false;
+
+        if (Physics.SphereCast(origin, visionRadius, dir, out RaycastHit hit, sightDistance))
+            return hit.transform.root == player;
+
         return false;
+    }
+
+    //alarm helpers
+    Transform GetClosestAlarmPoint()
+    {
+        Transform best = null;
+        float bestDist = Mathf.Infinity;
+
+        foreach (Transform t in alarmPoints)
+        {
+            float d = Vector3.Distance(transform.position, t.position);
+            if (d < bestDist)
+            {
+                bestDist = d;
+                best = t;
+            }
+        }
+
+        return best;
     }
 
     void OnDrawGizmosSelected()
@@ -218,13 +277,5 @@ public class AIEnemy : MonoBehaviour
 
         Gizmos.color = Color.blue;
         Gizmos.DrawWireSphere(transform.position, patrolRadius);
-
-        //vision cone
-        Vector3 left = Quaternion.Euler(0, -viewAngle / 2, 0) * transform.forward;
-        Vector3 right = Quaternion.Euler(0, viewAngle / 2, 0) * transform.forward;
-
-        Gizmos.color = Color.green;
-        Gizmos.DrawRay(transform.position + Vector3.up * eyeHeight, left * sightDistance);
-        Gizmos.DrawRay(transform.position + Vector3.up * eyeHeight, right * sightDistance);
     }
 }
