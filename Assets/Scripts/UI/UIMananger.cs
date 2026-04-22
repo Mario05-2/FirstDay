@@ -5,8 +5,8 @@ using UnityEngine.UI;
 public class UIMananger : MonoBehaviour
 {
     [SerializeField] GameObject pauseMenu;
-    [SerializeField] GameObject deathMenu;
     [SerializeField] GameObject winMenu;
+    [SerializeField] GameObject stealthMeterOverlay;
 
     public static bool isGamePaused;
 
@@ -15,7 +15,6 @@ public class UIMananger : MonoBehaviour
 
     public void Awake()
     {
-        deathMenu.SetActive(false);
         Time.timeScale = 1f;
     }
     void Start()
@@ -45,6 +44,8 @@ public class UIMananger : MonoBehaviour
     public void PauseGame()
     {
         pauseMenu.SetActive(true);
+        if (stealthMeterOverlay != null)
+            stealthMeterOverlay.SetActive(false);
         Time.timeScale = 0f;
         isGamePaused = true;
 
@@ -55,19 +56,6 @@ public class UIMananger : MonoBehaviour
         Cursor.lockState = CursorLockMode.None;
 
      
-        if (EventSystem.current != null)
-            EventSystem.current.SetSelectedGameObject(null);
-    }
-
-    public void DeathMenu()
-    {
-        deathMenu.SetActive(true);
-        Time.timeScale = 0f;
-        isGamePaused = true;
-
-        Cursor.visible = true;
-        Cursor.lockState = CursorLockMode.None;
-
         if (EventSystem.current != null)
             EventSystem.current.SetSelectedGameObject(null);
     }
@@ -88,6 +76,8 @@ public class UIMananger : MonoBehaviour
     public void ResumeGame()
     {
         pauseMenu.SetActive(false);
+        if (stealthMeterOverlay != null)
+            stealthMeterOverlay.SetActive(true);
         Time.timeScale = 1f;
         isGamePaused = false;
 

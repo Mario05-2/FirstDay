@@ -79,5 +79,5 @@ The keypad beeps.
 The door unlocks.
 I can now access the basement and find the important files.
 -> Enter the basement
-    <<stop>>
+    <<switchScene "Act3">>
 ===
