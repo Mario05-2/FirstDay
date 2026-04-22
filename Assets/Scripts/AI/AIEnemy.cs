@@ -50,7 +50,7 @@ public class AIEnemy : MonoBehaviour
     private float chaseTimer;
     private Transform currentPatrolPoint;
 
-    // ACT 2
+    //act 2 alarm response
     private Vector3 alarmPosition;
     private bool hasAlarm;
 
@@ -67,6 +67,7 @@ public class AIEnemy : MonoBehaviour
         Debug.Log("ai mode " + mode);
     }
 
+    //state machine
     void Update()
     {
         if (player == null) return;
@@ -108,11 +109,12 @@ public class AIEnemy : MonoBehaviour
         }
     }
 
+    //state transitions and logic
     void Transition(AIState newState)
     {
         state = newState;
 
-        Debug.Log("STATE → " + newState);
+        Debug.Log("state " + newState);
 
         if (newState == AIState.Patrol)
         {
@@ -151,6 +153,7 @@ public class AIEnemy : MonoBehaviour
         }
     }
 
+    //patrol helpers
     void SetPatrol()
     {
         patrolTimer = 0;
@@ -202,6 +205,7 @@ public class AIEnemy : MonoBehaviour
             Transition(AIState.Attack);
     }
 
+    //act 2 move to alarm
     void MoveToAlarmPoint()
     {
         if (!hasAlarm) return;
@@ -267,6 +271,7 @@ public class AIEnemy : MonoBehaviour
         return best;
     }
 
+    //debug and visualization
     void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.yellow;
