@@ -3,8 +3,11 @@ using Yarn.Unity;
 
 public class PlacementZone : MonoBehaviour
 {
+    [Header("Dialogue")]
     public DialogueRunner dialogueRunner;
-    public string yarnNode = "Place_Scanner";
+
+    [Header("Yarn Node")]
+    public string yarnNode;
 
     private bool used = false;
 
@@ -14,12 +17,28 @@ public class PlacementZone : MonoBehaviour
 
         if (other.CompareTag("Player"))
         {
+            Debug.Log("ZONE ENTERED: " + gameObject.name);
+
             PlacementManager.Instance.SetCurrentZone(this);
-            dialogueRunner.StartDialogue(yarnNode);
+
+            if (dialogueRunner != null)
+            {
+                Debug.Log("STARTING DIALOGUE: " + yarnNode);
+                dialogueRunner.StartDialogue(yarnNode);
+            }
         }
     }
 
-    public void CompletePlacement()
+    private void OnTriggerExit(Collider other)
+    {
+        if (other.CompareTag("Player"))
+        {
+            if (PlacementManager.Instance != null)
+                PlacementManager.Instance.ClearZone();
+        }
+    }
+
+    public void ClearZone()
     {
         used = true;
         gameObject.SetActive(false);

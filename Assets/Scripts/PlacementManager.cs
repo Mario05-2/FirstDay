@@ -5,33 +5,32 @@ public class PlacementManager : MonoBehaviour
 {
     public static PlacementManager Instance;
 
-    public GameObject placementOverlayCube;
+    [Header("Dialogue Runner")]
+    [SerializeField] private DialogueRunner dialogueRunner;
+
+    [Header("Prefabs")]
     public GameObject scannerPrefab;
     public GameObject relayPrefab;
 
-    private PlacementZone currentZone;
+    [Header("Overlays")]
+    public GameObject scannerOverlayCube;
+    public GameObject relayOverlayCube;
 
-    private DialogueRunner dialogueRunner;
+    private PlacementZone currentZone;
+    private bool scannerPlaced = false;
 
     private void Awake()
     {
         Instance = this;
 
-        if (placementOverlayCube != null)
-            placementOverlayCube.SetActive(false);
-    }
-
-    private void Start()
-    {
-        dialogueRunner = FindFirstObjectByType<DialogueRunner>();
-
         if (dialogueRunner == null)
         {
-            Debug.LogError("No DialogueRunner found in scene!");
+            Debug.LogError("DialogueRunner NOT assigned!");
             return;
         }
 
-        //manual command registration
+        Debug.Log("REGISTERING YARN COMMANDS ON: " + dialogueRunner.name);
+
         dialogueRunner.AddCommandHandler<string>(
             "ShowPlacementOverlay",
             ShowOverlay
@@ -43,46 +42,93 @@ public class PlacementManager : MonoBehaviour
         );
     }
 
+    private void Start()
+    {
+        HideAllOverlays();
+    }
+
+    //zone management
     public void SetCurrentZone(PlacementZone zone)
     {
         currentZone = zone;
+        Debug.Log("ZONE SET: " + zone.name);
     }
 
-    //[YarnCommand("ShowPlacementOverlay")]
-    public void ShowOverlay(string objectType)
+    public void ClearZone()
     {
-        Debug.Log("ShowOverlay called with objectType: " + objectType);
-        if (placementOverlayCube != null)
-            placementOverlayCube.SetActive(true);
+        currentZone = null;
     }
 
-    //[YarnCommand("PlaceObject")]
-    public void PlaceObject(string objectType)
+    //overlay
+    private void HideAllOverlays()
     {
-        Debug.Log("PlaceObject called with objectType: " + objectType);
-        if (currentZone == null) return;
+        if (scannerOverlayCube) scannerOverlayCube.SetActive(false);
+        if (relayOverlayCube) relayOverlayCube.SetActive(false);
+    }
 
-        GameObject prefabToPlace = null;
+    private void ShowOverlay(string objectType)
+    {
+        Debug.Log("SHOW OVERLAY: " + objectType);
+
+        HideAllOverlays();
 
         switch (objectType)
         {
             case "Scanner":
-                prefabToPlace = scannerPrefab;
+                if (scannerOverlayCube)
+                    scannerOverlayCube.SetActive(true);
                 break;
+
             case "Relay":
-                prefabToPlace = relayPrefab;
+                if (relayOverlayCube)
+                    relayOverlayCube.SetActive(true);
+                break;
+        }
+    }
+
+    //placement object
+    private void PlaceObject(string objectType)
+    {
+        Debug.Log("PLACE OBJECT: " + objectType);
+
+        if (currentZone == null)
+        {
+            Debug.LogError("NO CURRENT ZONE!");
+            return;
+        }
+
+        GameObject prefab = null;
+
+        switch (objectType)
+        {
+            case "Scanner":
+                prefab = scannerPrefab;
+                scannerPlaced = true;
+                Debug.Log("Scanner placed ✔");
+                break;
+
+            case "Relay":
+
+                if (!scannerPlaced)
+                {
+                    Debug.LogWarning("You must place Scanner first!");
+                    HideAllOverlays();
+                    return;
+                }
+
+                prefab = relayPrefab;
+                Debug.Log("Relay placed ✔");
                 break;
         }
 
-        if (prefabToPlace != null)
+        if (prefab != null)
         {
-            Instantiate(prefabToPlace, currentZone.transform.position, Quaternion.identity);
+            Instantiate(prefab, currentZone.transform.position, Quaternion.identity);
         }
 
-        if (placementOverlayCube != null)
-            placementOverlayCube.SetActive(false);
+        HideAllOverlays();
 
-        currentZone.CompletePlacement();
+        currentZone.ClearZone();
         currentZone = null;
     }
 }
