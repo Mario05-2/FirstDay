@@ -6,6 +6,7 @@ public class UIMananger : MonoBehaviour
 {
     [SerializeField] GameObject pauseMenu;
     [SerializeField] GameObject winMenu;
+    [SerializeField] GameObject caughtMenu;
     [SerializeField] GameObject stealthMeterOverlay;
 
     public static bool isGamePaused;
@@ -20,6 +21,8 @@ public class UIMananger : MonoBehaviour
     void Start()
     {
         pauseMenu.SetActive(false);
+        if (winMenu != null) winMenu.SetActive(false);
+        if (caughtMenu != null) caughtMenu.SetActive(false);
         isGamePaused = false;
 
         prevCursorVisible = Cursor.visible;
@@ -63,6 +66,26 @@ public class UIMananger : MonoBehaviour
     public void WinMenu()
     {
         winMenu.SetActive(true);
+        if (stealthMeterOverlay != null)
+            stealthMeterOverlay.SetActive(false);
+        Time.timeScale = 0f;
+        isGamePaused = true;
+
+        Cursor.visible = true;
+        Cursor.lockState = CursorLockMode.None;
+
+        if (EventSystem.current != null)
+            EventSystem.current.SetSelectedGameObject(null);
+    }
+
+    public void CaughtMenu()
+    {
+        if (caughtMenu != null)
+            caughtMenu.SetActive(true);
+
+        if (stealthMeterOverlay != null)
+            stealthMeterOverlay.SetActive(false);
+
         Time.timeScale = 0f;
         isGamePaused = true;
 

@@ -231,7 +231,7 @@ MonoBehaviour:
   walkingBobbingSpeed: 14
   bobbingAmount: 0.05
   canSlide: 1
-  canJump: 1
+  canJump: 0
   canSprint: 1
   canCrouch: 1
   groundCheck: {fileID: 9156347144365898843}

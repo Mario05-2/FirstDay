@@ -27,6 +27,7 @@ public class NPCInteraction : MonoBehaviour
     private bool playerInRange = false;
     private bool isCurrentlyTalking = false;
     private PlayerInput playerInput;
+    private FirstPersonController firstPersonController;
 
 
     public bool inDialogue = false;
@@ -51,11 +52,12 @@ public class NPCInteraction : MonoBehaviour
             }
         }
 
-        // Find PlayerInput component
+        // Find PlayerInput component and FirstPersonController
         GameObject player = GameObject.FindGameObjectWithTag("Player");
         if (player != null)
         {
             playerInput = player.GetComponent<PlayerInput>();
+            firstPersonController = player.GetComponent<FirstPersonController>();
         }
 
         // Subscribe to dialogue complete event to know when conversation ends
@@ -80,10 +82,8 @@ public class NPCInteraction : MonoBehaviour
         // Only allow starting dialogue if not already talking and no other dialogue is running
         if (playerInRange && !isCurrentlyTalking && !dialogueRunner.IsDialogueRunning)
         {
-            Debug.Log("Entered");
-            if (Keyboard.current[interactionKey].wasPressedThisFrame)
+            if (Keyboard.current != null && Keyboard.current[interactionKey].wasPressedThisFrame)
             {
-                Debug.Log("not working");
                 StartDialogue();
             }
         }
@@ -153,6 +153,12 @@ public class NPCInteraction : MonoBehaviour
         inDialogue = true;   
         isCurrentlyTalking = true;
         
+        // Lock player camera and movement during dialogue
+        if (firstPersonController != null)
+        {
+            firstPersonController.SetControl(false);
+        }
+        
         // Hide indicator during conversation
         if (interactionIndicator != null)
         {
@@ -168,6 +174,12 @@ public class NPCInteraction : MonoBehaviour
     private void OnDialogueComplete()
     {
         isCurrentlyTalking = false;
+        
+        // Unlock player camera and movement after dialogue
+        if (firstPersonController != null)
+        {
+            firstPersonController.SetControl(true);
+        }
         
         // Show indicator again if player is still in range
         if (playerInRange && interactionIndicator != null)

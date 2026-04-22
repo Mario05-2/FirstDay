@@ -12,8 +12,10 @@ GameObject:
   - component: {fileID: 7830525107856014814}
   - component: {fileID: 3989204918457132734}
   - component: {fileID: 7247393986249268527}
+  - component: {fileID: 155358889743707672}
+  - component: {fileID: 6470312340375981147}
   m_Layer: 0
-  m_Name: Enemy (3)
+  m_Name: Guard
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -112,6 +114,39 @@ MonoBehaviour:
   - {fileID: 0}
   sightConfirmTime: 0.4
   investigateDuration: 4
+--- !u!65 &155358889743707672
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5322496221549342834}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 1, y: 1.2778637, z: 0.8676661}
+  m_Center: {x: 0, y: 0.13893187, z: 0.51067036}
+--- !u!114 &6470312340375981147
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5322496221549342834}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e5e3da602910b494e96a4a243ab36191, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1001 &6701257214422648793
 PrefabInstance:
   m_ObjectHideFlags: 0
