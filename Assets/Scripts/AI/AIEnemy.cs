@@ -41,10 +41,13 @@ public class AIEnemy : MonoBehaviour
     [Header("Alarm System (ACT 2)")]
     [SerializeField] private List<Transform> alarmPoints;
 
+    [Header("Reaction")]
+    [SerializeField] private float sightConfirmTime = 0.4f;
+
     //act 2 alarm response
     private Vector3 alarmPosition;
     private bool hasAlarm;
-    private Vector3 lastProcessedAlarmPosition;
+    private int lastProcessedAlarmEventId;
 
     private bool investigating;
     private bool reachedAlarm;
@@ -53,6 +56,7 @@ public class AIEnemy : MonoBehaviour
 
     private NavMeshAgent agent;
     private Transform player;
+    private StealthMeter stealth;
 
     private AIState state;
 
@@ -60,20 +64,24 @@ public class AIEnemy : MonoBehaviour
     private float chaseTimer;
     private Transform currentPatrolPoint;
 
+    private float sightTimer;
+
     void Start()
     {
         agent = GetComponent<NavMeshAgent>();
 
         GameObject p = GameObject.FindWithTag("Player");
         if (p != null)
+        {
             player = p.transform;
+            stealth = player.GetComponent<StealthMeter>();
+        }
 
         Transition(AIState.Patrol);
 
         Debug.Log("ai mode " + mode);
     }
 
-    //state machine
     void Update()
     {
         if (player == null) return;
@@ -95,14 +103,15 @@ public class AIEnemy : MonoBehaviour
                 break;
         }
 
-        //act 2 detection alert
         if (mode == AIMode.Act2_AlarmResponse)
         {
             if (!hasAlarm && CanSeePlayer())
             {
+                HandleStealthDetection();
+
                 Transform alarm = GetClosestAlarmPoint();
 
-                if (alarm != null)
+                if (alarm != null && stealth != null && stealth.IsFullyDetected())
                 {
                     alarmPosition = alarm.position;
                     hasAlarm = true;
@@ -118,17 +127,26 @@ public class AIEnemy : MonoBehaviour
             }
         }
 
-        if (mode == AIMode.Act3_ChasePlayer && AlarmTrigger.alarmActive && lastProcessedAlarmPosition != AlarmTrigger.lastAlarmPosition)
+        if (mode == AIMode.Act3_ChasePlayer &&
+            AlarmTrigger.alarmActive &&
+            AlarmTrigger.lastAlarmPosition != Vector3.zero &&
+            AlarmTrigger.alarmEventId > lastProcessedAlarmEventId &&
+            !hasAlarm)
         {
+            lastProcessedAlarmEventId = AlarmTrigger.alarmEventId;
             StartAlarmResponse(AlarmTrigger.lastAlarmPosition);
-
-            Debug.Log("moving to act 3 alarm " + alarmPosition);
-
             Transition(AIState.Engage);
+        }
+
+        if (!CanSeePlayer())
+        {
+            sightTimer = 0f;
+
+            if (stealth != null)
+                stealth.AddDetection(-25f * Time.deltaTime);
         }
     }
 
-    //state transitions and logic
     void Transition(AIState newState)
     {
         state = newState;
@@ -142,6 +160,7 @@ public class AIEnemy : MonoBehaviour
             investigating = false;
             reachedAlarm = false;
             investigateTimer = 0;
+
             hasAlarm = false;
 
             SetPatrol();
@@ -150,6 +169,9 @@ public class AIEnemy : MonoBehaviour
         if (newState == AIState.Engage)
         {
             chaseTimer = Random.Range(minChaseTime, maxChaseTime);
+
+            if (stealth != null)
+                stealth.AddDetection(9999f);
         }
 
         if (newState == AIState.Attack)
@@ -158,15 +180,29 @@ public class AIEnemy : MonoBehaviour
         }
     }
 
-    //patrol state
     void Patrol()
     {
         agent.isStopped = false;
 
-        if (mode == AIMode.Act3_ChasePlayer && CanSeePlayer())
+        if (mode == AIMode.Act3_ChasePlayer)
         {
-            Transition(AIState.Engage);
-            return;
+            if (CanSeePlayer())
+            {
+                sightTimer += Time.deltaTime;
+
+                HandleStealthDetection();
+
+                if (sightTimer >= sightConfirmTime)
+                {
+                    sightTimer = 0f;
+                    Transition(AIState.Engage);
+                    return;
+                }
+            }
+            else
+            {
+                sightTimer = 0f;
+            }
         }
 
         if (!agent.pathPending && agent.remainingDistance <= agent.stoppingDistance)
@@ -178,7 +214,6 @@ public class AIEnemy : MonoBehaviour
         }
     }
 
-    //patrol helpers
     void SetPatrol()
     {
         patrolTimer = 0;
@@ -198,50 +233,43 @@ public class AIEnemy : MonoBehaviour
         }
     }
 
-    //engage state
     void Engage(float dist)
     {
         agent.isStopped = false;
 
-        //act 3 chase player
-        if (mode == AIMode.Act3_ChasePlayer)
+        if (mode == AIMode.Act3_ChasePlayer && hasAlarm)
         {
-            if (hasAlarm)
+            if (CanSeePlayer())
+            {
+                Debug.Log("player seen during act 3 alarm response, switching to chase");
+                ClearAlarmResponse();
+            }
+            else
             {
                 MoveToAlarmPoint();
 
-                if (!reachedAlarm && Vector3.Distance(transform.position, alarmPosition) <= 1.5f)
+                if (Vector3.Distance(transform.position, alarmPosition) <= 1.5f)
                 {
-                    reachedAlarm = true;
-                    investigating = true;
-                    investigateTimer = 0f;
-
-                    Debug.Log("arrived at act 3 alarm - investigating");
-                }
-
-                if (investigating)
-                {
-                    investigateTimer += Time.deltaTime;
-
-                    if (CanSeePlayer())
-                    {
-                        Debug.Log("player found at act 3 alarm");
-                        Transition(AIState.Attack);
-                        return;
-                    }
-
-                    if (investigateTimer >= investigateDuration)
-                    {
-                        Debug.Log("act 3 alarm cleared, resuming chase");
-                        ClearAlarmResponse();
-                        return;
-                    }
+                    Debug.Log("arrived at act 3 alarm");
+                    Debug.Log("act 3 alarm checked, returning to patrol");
+                    ClearAlarmResponse();
+                    Transition(AIState.Patrol);
+                    return;
                 }
 
                 return;
             }
+        }
 
+        if (mode == AIMode.Act3_ChasePlayer)
+        {
             agent.SetDestination(player.position);
+
+            if (CanSeePlayer())
+            {
+                HandleStealthDetection();
+                sightTimer = 0f;
+            }
 
             if (CanSeePlayer())
                 chaseTimer = Random.Range(minChaseTime, maxChaseTime);
@@ -259,24 +287,19 @@ public class AIEnemy : MonoBehaviour
                 Transition(AIState.Attack);
                 return;
             }
-
-            return;
         }
 
-        //act2 go to alarm
         if (mode == AIMode.Act2_AlarmResponse)
         {
             if (!hasAlarm) return;
 
-            MoveToAlarmPoint();
+            agent.SetDestination(alarmPosition);
 
             if (!reachedAlarm && Vector3.Distance(transform.position, alarmPosition) <= 1.5f)
             {
                 reachedAlarm = true;
                 investigating = true;
                 investigateTimer = 0f;
-
-                Debug.Log("arrived at alarm - investigating");
             }
 
             if (investigating)
@@ -285,14 +308,12 @@ public class AIEnemy : MonoBehaviour
 
                 if (CanSeePlayer())
                 {
-                    Debug.Log("player found at alarm");
                     Transition(AIState.Attack);
                     return;
                 }
 
                 if (investigateTimer >= investigateDuration)
                 {
-                    Debug.Log("nothing found, returning to patrol");
                     Transition(AIState.Patrol);
                     return;
                 }
@@ -303,10 +324,15 @@ public class AIEnemy : MonoBehaviour
             Transition(AIState.Attack);
     }
 
+    void HandleStealthDetection()
+    {
+        if (stealth != null)
+            stealth.AddDetection(65f * Time.deltaTime);
+    }
+
     void StartAlarmResponse(Vector3 position)
     {
         alarmPosition = position;
-        lastProcessedAlarmPosition = position;
         hasAlarm = true;
 
         investigating = false;
@@ -322,21 +348,21 @@ public class AIEnemy : MonoBehaviour
         investigateTimer = 0f;
     }
 
-    //act 2 move to alarm
     void MoveToAlarmPoint()
     {
         if (!hasAlarm) return;
 
         if (NavMesh.SamplePosition(alarmPosition, out NavMeshHit hit, 3f, NavMesh.AllAreas))
         {
-            agent.isStopped = false;
             agent.SetDestination(hit.position);
-
-            Debug.Log("moving to alarm point " + hit.position);
+        }
+        else
+        {
+            Debug.LogWarning("alarm position is off NavMesh; clearing alarm response");
+            ClearAlarmResponse();
         }
     }
 
-    //attack state
     void Attack(float dist)
     {
         Vector3 look = new Vector3(player.position.x, transform.position.y, player.position.z);
@@ -349,7 +375,6 @@ public class AIEnemy : MonoBehaviour
         }
     }
 
-    //vision check
     bool CanSeePlayer()
     {
         Vector3 origin = transform.position + Vector3.up * eyeHeight;
@@ -368,7 +393,6 @@ public class AIEnemy : MonoBehaviour
         return false;
     }
 
-    //alarm helpers
     Transform GetClosestAlarmPoint()
     {
         Transform best = null;
@@ -387,7 +411,6 @@ public class AIEnemy : MonoBehaviour
         return best;
     }
 
-    //debug and visualization
     void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.yellow;
