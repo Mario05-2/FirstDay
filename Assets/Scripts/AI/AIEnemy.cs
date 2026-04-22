@@ -4,6 +4,8 @@ using UnityEngine.AI;
 
 public class AIEnemy : MonoBehaviour
 {
+    public Animator anim;
+    private static readonly int IsRunningHash = Animator.StringToHash("IsRunning");
     public enum AIMode
     {
         Act3_ChasePlayer,
@@ -68,6 +70,7 @@ public class AIEnemy : MonoBehaviour
 
     void Start()
     {
+        anim = GetComponentInChildren<Animator>();
         agent = GetComponent<NavMeshAgent>();
 
         GameObject p = GameObject.FindWithTag("Player");
@@ -145,6 +148,8 @@ public class AIEnemy : MonoBehaviour
             if (stealth != null)
                 stealth.AddDetection(-25f * Time.deltaTime);
         }
+
+        UpdateRunningAnimation();
     }
 
     void Transition(AIState newState)
@@ -346,6 +351,16 @@ public class AIEnemy : MonoBehaviour
         investigating = false;
         reachedAlarm = false;
         investigateTimer = 0f;
+    }
+
+    void UpdateRunningAnimation()
+    {
+        if (anim == null || agent == null) return;
+
+        bool isMoving = !agent.isStopped && agent.hasPath &&
+                        agent.remainingDistance > agent.stoppingDistance + 0.05f;
+
+        anim.SetBool(IsRunningHash, state != AIState.Attack && isMoving);
     }
 
     void MoveToAlarmPoint()
