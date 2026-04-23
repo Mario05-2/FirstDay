@@ -1,9 +1,79 @@
 ﻿title: Act3
 ---
-I enter the passcode into the keypad.
-The keypad beeps.
-The door unlocks.
-I can now access the basement and find the important files.
--> Enter the basement
-    <<winScreen>>
+The basement door shuts behind me.
+A heavy lock engages.
+Rows of servers echo across the basement
+BigBoss: You're one last step.
+BigBoss: Go find the files
 ===
+
+title: Act3_End
+---
+I press the power button
+...
+Nothing.
+Then-
+The system boots instantly.
+WELCOME BACK.
+The text vanishes.
+BigBoss: That was immediate.
+BigBoss: Systems like this don't just—
+The screen floods a lot of lights.
+Access granted.
+BigBoss: You didn't authenticate?
+Data begins to scroll.
+BigBoss: This isn't storage.
+BigBoss: It's running something. 
+BigBoss: I've heard of places like this…
+BigBoss: Black sites disguised as corporate offices.
+BigBoss: Not for storing data—
+BigBoss: For testing behavior.
+A file opens.
+Then another.
+Then hundreds.
+LIQUID MONGOOSE.
+BigBoss: …
+BigBoss: That's you.
+Designation: LIQUID MONGOOSE SERIES. 
+Status: Active / Deployed.  
+Iteration Count: Redacted.
+BigBoss: “Series”…?
+More data appears.
+Deployment logs.
+Failure states.
+Termination records.
+BigBoss: These aren't reports.
+BigBoss: They are iterations.
+BigBoss: The Black Company doesn't recruit talent.
+BigBoss: They refine it.
+BigBoss: Over and over again… until it stops failing.
+BigBoss: Mongoose…
+BigBoss: Some of these timestamps—
+BigBoss: They are in the future.
+A live feed appears.
+This room.
+Me—standing at the terminal.
+BigBoss: …
+BigBoss: It was waiting for you.
+    ->Me: Waiting?
+BigBoss: You didn't access the system.
+BigBoss: You activated it.
+BigBoss: This place isn't storing you.
+BigBoss: It's producing you.
+BigBoss: Those workers upstairs—
+BigBoss: Did they react to you at all?
+…
+BigBoss: We need to move.
+BigBoss: Now.
+BigBoss: Take whatever data you can.
+BigBoss: And listen carefully—
+BigBoss: If this system can replace you…
+BigBoss: no one will know the difference.
+A deep brief pause.
+BigBoss: Mongoose…
+BigBoss: If you're seeing this…
+BigBoss: Then you're not the first one to make it this far.
+    -> Leave the server room.
+        <<winScreen>>
+===
+
