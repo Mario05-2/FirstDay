@@ -9050,6 +9050,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cc198eb118e7ab8469c1691a7c9559e9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!1 &1574407067 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 4668806599641416705, guid: db7c76a5d257d9e4d812912163d37c58, type: 3}
+  m_PrefabInstance: {fileID: 544677280}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &1588962796
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -11475,6 +11480,10 @@ PrefabInstance:
       propertyPath: pauseMenu
       value: 
       objectReference: {fileID: 869317616}
+    - target: {fileID: 5334386284578765022, guid: 7e2e4838a80310647940a0acf6400bde, type: 3}
+      propertyPath: caughtMenu
+      value: 
+      objectReference: {fileID: 1574407067}
     - target: {fileID: 5334386284578765022, guid: 7e2e4838a80310647940a0acf6400bde, type: 3}
       propertyPath: stealthMeterOverlay
       value: 
