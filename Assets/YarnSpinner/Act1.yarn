@@ -3,16 +3,18 @@
 Wind rushes across the rooftop.
 The city is quiet yet alive from within.
 <<once>>
+BigBoss:There you are.
 BigBoss: Glad to see you picked up and are in position.
 BigBoss: Before we send you inside, we need to prepare the site.
-BigBoss: Place the equipment where I marked it.
+BigBoss: Place the equipment where I marked it red.
 BigBoss: It will give us the edge in this operation once things get... complicated.
     ->Me: What kind of complications?
 BigBoss: You won't be alone in there.
 BigBoss: Security patrols the building and the workers are there as well.
 BigBoss: If the spot you, the mission is over.
-
-<<endonce>>
+BigBoss: You know what you were made for.
+<<endonce>>>
+<<jump Act1_Task1>>
 ===
 
 title: Act1_Task1
@@ -61,13 +63,14 @@ BigBoss: That should keep us connected unless something disables it.
 title: Act1_Final
 ---
 BigBoss: That's everything
-BigBoss: From here on, you're on your own
-BigBoss: I can only give guidance
+BigBoss: From here on, you're on your own, I'm just a voice in your ear.
+BigBoss: I can only give guidance.
 BigBoss: The basement holds the files we need.
-BigBoss: The keypad inside is locked- you will need to find a way to open it.
 BigBoss: And remember- security and the office workers are active throughout the building.
 BigBoss: Avoid them at all costs.
+BigBoss: You're here not to be seen.
+BigBoss: You're here to prove something.
     ->Me:I'll handle it.
-BigBoss: Get moving
+BigBoss: Move out.
 <<switchScene "Act2">>
 ===
