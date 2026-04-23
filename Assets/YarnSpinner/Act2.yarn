@@ -1,30 +1,45 @@
 ﻿title: Act2
 ---
 <<once>>
-BigBoss: I see you made it inside safely. 
+BigBoss: You're inside
+BigBoss: Your vitals barely shifted on entry. 
+BigBoss: Either you're calm...
+BisBoss: Or you were designed not to feel it.
 BigBoss: I hope you are ready for what is to come next.
     ->Me: I'm ready.
         <<jump Act2Stage1>>
-    ->Me: What is the Objective again?
-        BigBoss: We just discussed this.
+    ->Me: Remind me of the objective?
+        BigBoss: You don't just forgot things like this.
+        BigBoss: Not unless something is wrong.
         <<jump Briefing>>
 <<endonce>>
 ===
 
 title: Briefing
 ---
-BigBoss: The objective is to get into the basement and find the important files that we seek.
+BigBoss: Basement level.
+BigBoss: That's where they keep the real data.
+BigBoss: Not the surface-level corporate garbage-
+BigBoss: the kind of files people bury.
+BigBoss: Get in, extract and get out.
+BigBoss: Quietly.
 <<jump Act2Stage1>>
 ===
 title: Act2Stage1
 ---
-BigBoss: The first stage is getting getting the passcode for the basement.
-BigBoss: I have heard that the passcode is scattered on notes around the building.
-BigBoss: You will have to find all the notes and piece together the passcode.
-    ->Me: I can do that.
+BigBoss: Fist problem-access.
+BigBoss: The basement keypad isn't networked.
+BigBoss: No remote override.
+BigBoss: Ancient old-school security.
+BigBoss: There must be a physical code somewhere in the building.
+BigBoss: I'm picking up fragments of paper trails.
+BigBoss: Notes perhaps.
+BigBoss: Find them then piece the code together
+    ->Me: Understood.
         <<stop>>
     ->Me: Can you give me any tips?
-        BigBoss: I have heard that the notes are hidden in places that are commonly overlooked.
+        BigBoss: The notes are misplaced in places that are commonly overlooked.
+        BigBoss: Almost like they weren't meant to be found all at once. 
         <<stop>>       
 ===
 
@@ -78,6 +93,12 @@ I enter the passcode into the keypad.
 The keypad beeps.
 The door unlocks.
 I can now access the basement and find the important files.
+BigBoss: ...
+BigBoss: That was quick.
+BigBoss: Almost too quick.
+BigBoss: Move down there.
+BigBoss: And Mongoose-
+BigBoss: Be careful down there.
 -> Enter the basement
     <<switchScene "Act3">>
 ===
