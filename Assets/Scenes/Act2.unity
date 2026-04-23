@@ -3413,6 +3413,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Person_1
       objectReference: {fileID: 0}
+    - target: {fileID: 1108663382893569034, guid: 32563987fb16f5f47a988e8154266c71, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 8133694441559203046, guid: 32563987fb16f5f47a988e8154266c71, type: 3}
       propertyPath: dialogueNode
       value: Act2_Start
