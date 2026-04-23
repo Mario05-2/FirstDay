@@ -13514,6 +13514,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Person_3
       objectReference: {fileID: 0}
+    - target: {fileID: 8133694441559203046, guid: b0abc8b54d51fa74394b424a2bbb8391, type: 3}
+      propertyPath: dialogueNode
+      value: Act3_End
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
